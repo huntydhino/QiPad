@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14131d">
+  <title>Boxx Keymap Studio</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #14131d;
+      --panel: #1d1b29;
+      --panel-raised: #242232;
+      --line: #373448;
+      --text: #f5f1ff;
+      --muted: #aaa5bd;
+      --lavender: #c6a9ff;
+      --mint: #8de6ca;
+      --pink: #ff9fca;
+      --yellow: #f5d98b;
+      font-family: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 18% 0%, #32284b 0, transparent 37rem),
+        radial-gradient(ellipse at 92% 38%, #173b3b44 0, transparent 34rem),
+        var(--bg);
+    }
+
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    .shell { max-width: 1200px; margin: auto; padding: 38px 28px 48px; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+    .eyebrow {
+      color: var(--mint);
+      font: 700 11px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 8px 0 7px; font-size: clamp(29px, 5vw, 43px); letter-spacing: -.045em; }
+    .subtitle { margin: 0; color: var(--muted); font-size: 15px; }
+    .header-sparkle { color: var(--pink); font-size: 26px; padding: 6px; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px;
+      margin-bottom: 20px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: #1b1926e8;
+    }
+    .toolbar-spacer { flex: 1; }
+    .drive-status { color: var(--muted); font-size: 12px; margin: 0 5px; }
+    .btn {
+      min-height: 41px;
+      padding: 0 15px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--panel-raised);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      transition: transform .15s, border-color .15s, background .15s;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); border-color: #77708e; }
+    .btn:focus-visible, .controller-key:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--mint);
+      outline-offset: 3px;
+    }
+    .btn:disabled { opacity: .43; cursor: not-allowed; }
+    .btn-primary { color: #20192d; border-color: transparent; background: var(--lavender); }
+    .btn-save { color: #10251f; border-color: transparent; background: var(--mint); }
+    .btn-connect { color: var(--text); border-color: #75628f; background: #39304d; }
+
+    .info-strip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 16px;
+      margin-bottom: 24px;
+      border: 1px solid #3c394b;
+      border-radius: 13px;
+      color: var(--muted);
+      background: #201e2b9c;
+      font-size: 13px;
+    }
+    .info-strip strong { color: var(--text); }
+    .info-icon { color: var(--yellow); font-size: 17px; }
+
+    .board-wrap {
+      position: relative;
+      padding: 24px;
+      border: 1px solid #343143;
+      border-radius: 23px;
+      background: linear-gradient(145deg, #211f2d, #191823 80%);
+      box-shadow: 0 24px 70px #08070c55, inset 0 1px #ffffff08;
+    }
+    .board-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 0 2px 20px;
+    }
+    .board-top h2 { margin: 0; font-size: 15px; letter-spacing: .01em; }
+    .board-top p { margin: 0; color: var(--muted); font-size: 12px; }
+    .controller-viewport { width: 100%; overflow-x: auto; }
+    .controller-faceplate {
+      position: relative;
+      isolation: isolate;
+      width: 100%;
+      min-width: 760px;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border: 1px solid #514c60;
+      border-radius: 34px;
+      background:
+        radial-gradient(ellipse at 18% 44%, #39344b 0, transparent 38%),
+        radial-gradient(ellipse at 83% 44%, #353144 0, transparent 38%),
+        linear-gradient(150deg, #252330, #191821 70%);
+      box-shadow: inset 0 2px #ffffff0a, inset 0 -12px 35px #0c0b115e, 0 15px 40px #09080e5c;
+    }
+    .controller-faceplate::before {
+      position: absolute;
+      z-index: -1;
+      inset: 12px;
+      border: 1px solid #ffffff08;
+      border-radius: 25px;
+      content: "";
+      pointer-events: none;
+    }
+    .faceplate-screw {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border: 1px solid #716c7c;
+      border-radius: 50%;
+      background: #17161e;
+      box-shadow: inset 0 1px #ffffff25;
+    }
+    .screw-tl { top: 21px; left: 21px; }
+    .screw-tr { top: 21px; right: 21px; }
+    .screw-bl { bottom: 21px; left: 21px; }
+    .screw-br { right: 21px; bottom: 21px; }
+    .layout-group {
+      position: absolute;
+      display: grid;
+      grid-template-rows: 1fr;
+      min-width: 0;
+    }
+    .movement-group { top: 26%; left: 3.5%; width: 29%; height: 54%; }
+    .utility-group { top: 42%; left: 39%; width: 22%; height: 18%; }
+    .action-group { top: 8%; right: 5%; width: 30%; height: 36%; }
+    .cstick-group { right: 8%; bottom: 4%; width: 24%; height: 48%; }
+    .button-grid { display: grid; min-width: 0; min-height: 0; }
+    .movement-grid { grid-template: repeat(4, 1fr) / repeat(4, 1fr); }
+    .utility-grid { grid-template: 1fr / repeat(3, 1fr); align-items: center; }
+    .action-grid {
+      width: 84%;
+      justify-self: center;
+      grid-template: repeat(2, 1fr) / repeat(4, 1fr);
+    }
+    .cstick-grid {
+      width: 64%;
+      height: 74%;
+      align-self: center;
+      justify-self: center;
+      grid-template: repeat(4, 1fr) / repeat(3, 1fr);
+    }
+    .cstick-group .key-face { width: clamp(34px, 3.8vw, 48px); }
+    .cstick-group [data-id="A_BUTTON"] { grid-column: 1; grid-row: 4; }
+    .controller-key {
+      z-index: 1;
+      display: grid;
+      min-width: 0;
+      justify-items: center;
+      align-content: start;
+      gap: 0;
+      padding: 0;
+      border: 0;
+      color: var(--text);
+      background: transparent;
+      cursor: pointer;
+      --key-offset-y: 0px;
+      transform: translateY(var(--key-offset-y));
+      transition: filter .16s, transform .16s;
+    }
+    .controller-key:hover {
+      z-index: 2;
+      filter: brightness(1.17);
+      transform: translateY(calc(var(--key-offset-y) - 2px));
+    }
+    .controller-key:active { transform: translateY(calc(var(--key-offset-y) + 1px)) scale(.97); }
+    .action-grid [data-id="R"],
+    .action-grid [data-id="MS"],
+    .action-grid [data-id="Z"],
+    .action-grid [data-id="LS"] { --key-offset-y: 8px; }
+    .movement-grid [data-id="LEFT"],
+    .movement-grid [data-id="MY"] { --key-offset-y: 8px; }
+    .movement-grid [data-id="UP_THUMB"] {
+      position: relative;
+      top: clamp(4px, .55vw, 7px);
+      left: clamp(4px, .55vw, 7px);
+    }
+    .movement-grid [data-id="MX"] {
+      position: relative;
+      top: calc(-1 * clamp(4px, .55vw, 7px));
+      left: calc(-1 * clamp(4px, .55vw, 7px));
+    }
+    .controller-key.selected { z-index: 3; }
+    .controller-key.selected .key-face {
+      outline: 3px solid #fff;
+      outline-offset: 3px;
+      box-shadow: 0 0 24px #ffffff66, inset 0 2px #ffffff55, 0 4px 10px #0008;
+    }
+    .key-face {
+      display: grid;
+      width: clamp(42px, 5.2vw, 61px);
+      aspect-ratio: 1;
+      place-items: center;
+      align-content: center;
+      gap: 2px;
+      padding: 4px;
+      border: 2px solid #ffffff45;
+      border-radius: 30%;
+      color: #201c27;
+      box-shadow: inset 0 2px #ffffff48, inset 0 -4px #0002, 0 4px 9px #0008;
+      font-size: 14px;
+      font-weight: 850;
+      line-height: 1;
+      text-align: center;
+      text-shadow: 0 1px #ffffff33;
+      transition: box-shadow .16s;
+    }
+    .key-label { max-width: 100%; overflow-wrap: anywhere; }
+    .controller-key[data-id="EXTRA_LEFT"] .key-label,
+    .controller-key[data-id="EXTRA_RIGHT"] .key-label { font-size: 8px; }
+    .tone-blue .key-face { background: linear-gradient(145deg, #78b9fa, #4385d8); }
+    .tone-grey .key-face { background: linear-gradient(145deg, #afb2bb, #777b89); }
+    .tone-yellow .key-face { background: linear-gradient(145deg, #ffe47c, #e5b638); }
+    .tone-lime_green .key-face { background: linear-gradient(145deg, #ffe47c, #e5b638); }
+    .tone-dark_grey .key-face { color: #f5f1ff; background: linear-gradient(145deg, #626572, #393b48); }
+    .tone-light_purple .key-face { background: linear-gradient(145deg, #d6b5ff, #a27bd2); }
+    .tone-coral_red .key-face { background: linear-gradient(145deg, #ff9a94, #df5961); }
+    .tone-white .key-face { background: linear-gradient(145deg, #fff, #d1cbd9); }
+    .pos-far_left { grid-column: 4; grid-row: 1; }
+    .pos-arc_top_left { grid-column: 1; grid-row: 1; }
+    .pos-arc_top_center { grid-column: 2; grid-row: 1; }
+    .pos-arc_top_right { grid-column: 3; grid-row: 1; }
+    .pos-lower_left_thumb { grid-column: 2; grid-row: 3; }
+    .pos-lower_left_thumb_adj { grid-column: 3; grid-row: 4; }
+    .pos-left_of_start { grid-column: 1; grid-row: 1; }
+    .pos-center { grid-column: 2; grid-row: 1; }
+    .pos-right_of_start { grid-column: 3; grid-row: 1; }
+    .pos-top { grid-column: 2; grid-row: 1; }
+    .pos-left { grid-column: 1; grid-row: 2; }
+    .pos-right { grid-column: 3; grid-row: 2; }
+    .pos-bottom { grid-column: 2; grid-row: 3; }
+    .pos-top_left { grid-column: 1; grid-row: 1; }
+    .pos-top_center { grid-column: 2; grid-row: 1; }
+    .pos-top_right { grid-column: 3; grid-row: 1; }
+    .pos-middle_left { grid-column: 1; grid-row: 2; }
+    .pos-middle_center { grid-column: 2; grid-row: 2; }
+    .pos-middle_right { grid-column: 3; grid-row: 2; }
+    .pos-far_right_top { grid-column: 4; grid-row: 1; }
+    .pos-far_right_bottom { grid-column: 4; grid-row: 2; }
+    .legend { display: flex; flex-wrap: wrap; gap: 18px; margin: 20px 2px 0; color: var(--muted); font-size: 11px; }
+    .legend span { display: flex; align-items: center; gap: 7px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); }
+    .dot.blue { background: #4a93e9; }
+    .dot.yellow { background: #e5b638; }
+    .dot.red { background: #df5961; }
+    .footer-note { margin: 17px 3px 0; color: #888398; font-size: 11px; line-height: 1.6; }
+
+    dialog {
+      width: min(440px, calc(100% - 28px));
+      padding: 0;
+      border: 1px solid #49445a;
+      border-radius: 20px;
+      color: var(--text);
+      background: #211f2c;
+      box-shadow: 0 24px 90px #000a;
+    }
+    dialog::backdrop { background: #090810bd; backdrop-filter: blur(5px); }
+    .dialog-inner { padding: 23px; }
+    .dialog-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .dialog-head h2 { margin: 0 0 5px; font-size: 20px; }
+    .dialog-head p { margin: 0; color: var(--muted); font: 12px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .close-button { padding: 3px 7px; border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 22px; }
+    .field-label { display: block; margin: 22px 0 8px; color: #d3cede; font-size: 12px; font-weight: 700; }
+    .capture-box {
+      display: flex;
+      min-height: 72px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 14px;
+      border: 1px dashed #6a5a86;
+      border-radius: 12px;
+      background: #30283b;
+    }
+    .capture-box.listening { border-style: solid; border-color: var(--mint); background: #243631; }
+    .capture-copy strong { display: block; font-size: 13px; }
+    .capture-copy span { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
+    .capture-value { color: var(--mint); font: 700 12px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .dialog-input {
+      width: 100%;
+      min-height: 42px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      color: var(--text);
+      background: #171620;
+    }
+    select.dialog-input { margin-top: 8px; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+    .toast {
+      position: fixed;
+      z-index: 5;
+      right: 24px;
+      bottom: 24px;
+      max-width: min(440px, calc(100vw - 32px));
+      padding: 13px 17px;
+      border: 1px solid #5b806f;
+      border-radius: 12px;
+      color: #e7fff5;
+      background: #263d35;
+      box-shadow: 0 10px 35px #0007;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity .2s, transform .2s;
+      font-size: 13px;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { border-color: #9c6172; background: #482b38; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+    @media (max-width: 620px) {
+      .shell { padding: 25px 14px 35px; }
+      header { margin-bottom: 22px; }
+      .toolbar { gap: 8px; padding: 11px; }
+      .toolbar-spacer { display: none; }
+      .drive-status { width: 100%; order: 2; }
+      .toolbar .btn { flex: 1; padding-inline: 9px; font-size: 12px; }
+      .board-wrap { padding: 16px 12px; }
+      .board-top { align-items: flex-start; flex-direction: column; }
+    }
+    @media (max-width: 760px) {
+      .controller-faceplate { min-width: 760px; }
+      .controller-viewport { margin: 0 -4px; width: calc(100% + 8px); }
+      .key-face { width: 47px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <div class="eyebrow">vroom vroom just keymap away</div>
+        <h1>QiMap Modifier</h1>
+        <p class="subtitle">only pico 2w is supported!!</p>
+      </div>
+    </header>
+
+    <section class="toolbar" aria-label="Keymap file actions">
+      <button class="btn btn-connect" id="connectButton">♡ &nbsp;Connect CIRCUITPY Drive</button>
+      <button class="btn btn-save" id="saveButton" disabled>Save to Pico</button>
+      <span class="toolbar-spacer"></span>
+      <button class="btn" id="importButton">Import JSON</button>
+      <button class="btn" id="exportButton">Export JSON</button>
+      <input class="sr-only" type="file" id="importInput" accept="application/json,.json">
+      <span class="drive-status" id="driveStatus" role="status">Default map loaded · Connect a drive to save directly</span>
+    </section>
+
+    <div class="info-strip">
+      <span class="info-icon" aria-hidden="true">✦</span>
+      <span><strong>Tap any button</strong> to remap it. Click “Listen” and press a key, or pick a keycode from the searchable list.</span>
+    </div>
+
+    <section class="board-wrap" aria-labelledby="layoutTitle">
+      <div class="board-top">
+        <h2 id="layoutTitle">Your Boxx layout <span aria-hidden="true">♡</span></h2>
+        <p>22 controls · Select a button to edit its key binding</p>
+      </div>
+      <div class="controller-viewport">
+        <div class="controller-faceplate" aria-label="Boxx controller faceplate">
+          <span class="faceplate-screw screw-tl" aria-hidden="true"></span>
+          <span class="faceplate-screw screw-tr" aria-hidden="true"></span>
+          <span class="faceplate-screw screw-bl" aria-hidden="true"></span>
+          <span class="faceplate-screw screw-br" aria-hidden="true"></span>
+          <section class="layout-group movement-group" aria-label="Left movement cluster">
+            <div class="button-grid movement-grid" id="leftMovement"></div>
+          </section>
+          <section class="layout-group utility-group" aria-label="Center start and extra buttons">
+            <div class="button-grid utility-grid" id="centerUtility"></div>
+          </section>
+          <section class="layout-group action-group" aria-label="Upper right action cluster">
+            <div class="button-grid action-grid" id="rightActions"></div>
+          </section>
+          <section class="layout-group cstick-group" aria-label="Right C-stick and A cluster">
+            <div class="button-grid cstick-grid" id="cstickCluster"></div>
+          </section>
+        </div>
+      </div>
+      <div class="legend">
+        <span><i class="dot blue"></i> MY / MX modifiers</span>
+        <span><i class="dot yellow"></i> C-Stick / A</span>
+        <span><i class="dot red"></i> B action</span>
+        <span><i class="dot"></i> GP pin + current key binding</span>
+      </div>
+    </section>
+    <p class="footer-note">Your edits stay in this page until you export them or save them to your Pico. When the drive is connected, saving writes <code>binds.json</code> to its root; CircuitPython can then reload the new bindings.</p>
+  </main>
+
+  <dialog id="editDialog" aria-labelledby="dialogTitle">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <div>
+          <h2 id="dialogTitle">Edit button</h2>
+          <p id="dialogPin">GP—</p>
+        </div>
+        <button class="close-button" id="closeDialog" aria-label="Close dialog">&times;</button>
+      </div>
+      <label class="field-label" for="listenButton">Listen for keypress</label>
+      <div class="capture-box" id="captureBox">
+        <div class="capture-copy">
+          <strong id="captureMessage">Ready when you are</strong>
+          <span>Press a key on your keyboard</span>
+        </div>
+        <span class="capture-value" id="captureValue">—</span>
+      </div>
+      <button class="btn btn-primary" id="listenButton" style="width:100%;margin-top:10px">⌨ &nbsp; Listen for Keypress</button>
+      <label class="field-label" for="keySearch">Or choose a keycode</label>
+      <input class="dialog-input" id="keySearch" type="search" placeholder="Search keycodes…" autocomplete="off">
+      <select class="dialog-input" id="keySelect" size="6" aria-label="Available CircuitPython keycodes"></select>
+      <div class="dialog-actions">
+        <button class="btn" id="cancelDialog">Cancel</button>
+        <button class="btn btn-save" id="applyButton">Apply binding</button>
+      </div>
+    </div>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="application/json" id="layoutData">
+    {
+      "layout_name": "Boxx-Style Arcade Controller (22 Buttons Total)",
+      "container": {
+        "aspect_ratio": "16:9",
+        "style": "Relative positioning or absolute coordinate plane representing the controller faceplate"
+      },
+      "sections": [
+        {
+          "name": "left_movement_cluster",
+          "description": "Arc layout for left-hand movement and modifiers",
+          "buttons": [
+            { "id": "MY", "label": "MY", "color": "blue", "position": "far_left" },
+            { "id": "LEFT", "label": "←", "color": "grey", "position": "arc_top_left" },
+            { "id": "DOWN", "label": "↓", "color": "grey", "position": "arc_top_center" },
+            { "id": "RIGHT", "label": "→", "color": "grey", "position": "arc_top_right" },
+            { "id": "UP_THUMB", "label": "↑", "color": "grey", "position": "lower_left_thumb" },
+            { "id": "MX", "label": "MX", "color": "blue", "position": "lower_left_thumb_adj" }
+          ]
+        },
+        {
+          "name": "center_utility_cluster",
+          "description": "Central column including Start and two requested adjacent utility buttons",
+          "buttons": [
+            { "id": "EXTRA_LEFT", "label": "Select / Extra 1", "color": "white", "position": "left_of_start" },
+            { "id": "START", "label": "Start", "color": "white", "position": "center" },
+            { "id": "EXTRA_RIGHT", "label": "Home / Extra 2", "color": "white", "position": "right_of_start" }
+          ]
+        },
+        {
+          "name": "right_c_stick_cluster",
+          "description": "Yellow circular C-Stick cluster positioned at the lower right",
+          "buttons": [
+            { "id": "C_UP", "label": "↑", "color": "yellow", "position": "top" },
+            { "id": "C_LEFT", "label": "←", "color": "yellow", "position": "left" },
+            { "id": "C_RIGHT", "label": "→", "color": "yellow", "position": "right" },
+            { "id": "C_DOWN", "label": "↓", "color": "yellow", "position": "bottom" },
+            { "id": "A_BUTTON", "label": "A", "color": "lime_green", "position": "center" }
+          ]
+        },
+        {
+          "name": "right_action_cluster",
+          "description": "Main action buttons and shoulder modifiers grouped at the upper right",
+          "buttons": [
+            { "id": "R", "label": "R", "color": "dark_grey", "position": "top_left" },
+            { "id": "Y", "label": "Y", "color": "grey", "position": "top_center" },
+            { "id": "L", "label": "L", "color": "grey", "position": "top_right" },
+            { "id": "Z", "label": "Z", "color": "light_purple", "position": "middle_left" },
+            { "id": "X", "label": "X", "color": "grey", "position": "middle_center" },
+            { "id": "B", "label": "B", "color": "coral_red", "position": "middle_right" },
+            { "id": "MS", "label": "MS", "color": "grey", "position": "far_right_top" },
+            { "id": "LS", "label": "LS", "color": "grey", "position": "far_right_bottom" }
+          ]
+        }
+      ]
+    }
+  </script>
+  <script>
+    "use strict";
+    const layout = JSON.parse(document.getElementById("layoutData").textContent);
+    const pinById = Object.freeze({
+      A_BUTTON: 1, C_DOWN: 2, C_LEFT: 3, C_UP: 4, C_RIGHT: 5,
+      MS: 6, LS: 7, B: 8, L: 9, X: 10, Y: 11, Z: 12, R: 13,
+      EXTRA_RIGHT: 14, START: 15, MX: 16, MY: 17, UP_THUMB: 18,
+      EXTRA_LEFT: 19, RIGHT: 20, DOWN: 21, LEFT: 22
+    });
+
+    const keycodes = [
+      ...("ABCDEFGHIJKLMNOPQRSTUVWXYZ").split(""),
+      "ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE",
+      ...Array.from({ length: 24 }, (_, i) => `F${i + 1}`),
+      "ENTER", "ESCAPE", "BACKSPACE", "TAB", "SPACEBAR",
+      "MINUS", "EQUALS", "LEFT_BRACKET", "RIGHT_BRACKET", "BACKSLASH", "POUND",
+      "SEMICOLON", "QUOTE", "GRAVE_ACCENT", "COMMA", "PERIOD", "FORWARD_SLASH",
+      "CAPS_LOCK", "PRINT_SCREEN", "SCROLL_LOCK", "PAUSE", "INSERT", "HOME", "PAGE_UP",
+      "DELETE", "END", "PAGE_DOWN", "RIGHT_ARROW", "LEFT_ARROW", "DOWN_ARROW", "UP_ARROW",
+      "KEYPAD_NUMLOCK", "KEYPAD_FORWARD_SLASH", "KEYPAD_ASTERISK", "KEYPAD_MINUS", "KEYPAD_PLUS",
+      "KEYPAD_ENTER", "KEYPAD_ONE", "KEYPAD_TWO", "KEYPAD_THREE", "KEYPAD_FOUR",
+      "KEYPAD_FIVE", "KEYPAD_SIX", "KEYPAD_SEVEN", "KEYPAD_EIGHT", "KEYPAD_NINE",
+      "KEYPAD_ZERO", "KEYPAD_PERIOD", "BACKSLASH", "APPLICATION", "POWER",
+      "LEFT_CONTROL", "LEFT_SHIFT", "LEFT_ALT", "LEFT_GUI",
+      "RIGHT_CONTROL", "RIGHT_SHIFT", "RIGHT_ALT", "RIGHT_GUI"
+    ];
+    const keycodeSet = new Set(keycodes);
+    const defaults = {
+      GP1: "A", GP2: "DOWN_ARROW", GP3: "LEFT_ARROW", GP4: "UP_ARROW", GP5: "RIGHT_ARROW",
+      GP6: "M", GP7: "N", GP8: "B", GP9: "L", GP10: "X", GP11: "Y", GP12: "Z", GP13: "R",
+      GP14: "RIGHT_ALT", GP15: "PERIOD", GP16: "SEMICOLON", GP17: "QUOTE", GP18: "K",
+      GP19: "LEFT_ALT", GP20: "D", GP21: "S", GP22: "A"
+    };
+    const buttons = layout.sections.flatMap(section => section.buttons.map(button => ({
+      ...button,
+      section: section.name,
+      pin: pinById[button.id]
+    })));
+    const state = { ...defaults };
+    let activeButton = null;
+    let draftKey = "";
+    let listening = false;
+    let directoryHandle = null;
+    let toastTimer;
+
+    const dialog = document.getElementById("editDialog");
+    const keySearch = document.getElementById("keySearch");
+    const keySelect = document.getElementById("keySelect");
+    const captureBox = document.getElementById("captureBox");
+    const captureMessage = document.getElementById("captureMessage");
+    const captureValue = document.getElementById("captureValue");
+
+    function render() {
+      const groups = {
+        left_movement_cluster: "leftMovement",
+        center_utility_cluster: "centerUtility",
+        right_c_stick_cluster: "cstickCluster",
+        right_action_cluster: "rightActions"
+      };
+      for (const groupId of Object.values(groups)) {
+        document.getElementById(groupId).replaceChildren();
+      }
+      for (const button of buttons) {
+        const pin = `GP${button.pin}`;
+        const element = document.createElement("button");
+        element.type = "button";
+        element.className = `controller-key pos-${button.position} tone-${button.color}`;
+        element.dataset.id = button.id;
+        element.dataset.pin = pin;
+        element.title = `${pin} · ${state[pin]}`;
+        element.setAttribute("aria-label", `${button.label}, ${pin}, bound to ${state[pin]}. Click to edit.`);
+        element.setAttribute("aria-pressed", String(activeButton?.id === button.id));
+        if (activeButton?.id === button.id) element.classList.add("selected");
+
+        const face = document.createElement("span");
+        face.className = "key-face";
+        const label = document.createElement("span");
+        label.className = "key-label";
+        label.textContent = button.label;
+        face.append(label);
+
+        element.append(face);
+        element.addEventListener("click", () => openEditor(button));
+        document.getElementById(groups[button.section]).append(element);
+      }
+    }
+
+    function showToast(message, isError = false) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.toggle("error", isError);
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 3600);
+    }
+
+    function filterKeycodes() {
+      const query = keySearch.value.trim().toUpperCase();
+      const matches = keycodes.filter(name => name.includes(query));
+      keySelect.replaceChildren(...matches.map(name => new Option(name, name)));
+      const selected = matches.includes(draftKey) ? draftKey : matches[0];
+      if (selected) keySelect.value = selected;
+    }
+
+    function setDraft(key) {
+      if (!keycodeSet.has(key)) return;
+      draftKey = key;
+      captureValue.textContent = key;
+      keySearch.value = "";
+      filterKeycodes();
+      keySelect.value = key;
+    }
+
+    function openEditor(button) {
+      activeButton = button;
+      draftKey = state[`GP${button.pin}`];
+      document.getElementById("dialogTitle").textContent = button.label;
+      document.getElementById("dialogPin").textContent = `${button.id} · GP${button.pin} · CURRENTLY ${draftKey}`;
+      captureValue.textContent = draftKey;
+      captureMessage.textContent = "Ready when you are";
+      captureBox.classList.remove("listening");
+      listening = false;
+      keySearch.value = "";
+      filterKeycodes();
+      keySelect.value = draftKey;
+      render();
+      dialog.showModal();
+    }
+
+    function stopListening() {
+      listening = false;
+      captureBox.classList.remove("listening");
+      document.getElementById("listenButton").textContent = "⌨  Listen for Keypress";
+    }
+
+    function codeToKeycode(code) {
+      if (/^Key[A-Z]$/.test(code)) return code.slice(3);
+      if (/^Digit[0-9]$/.test(code)) return ["ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE"][Number(code.slice(5))];
+      if (/^F(?:[1-9]|1[0-9]|2[0-4])$/.test(code)) return code;
+      const codes = {
+        ArrowDown: "DOWN_ARROW", ArrowLeft: "LEFT_ARROW", ArrowRight: "RIGHT_ARROW", ArrowUp: "UP_ARROW",
+        AltLeft: "LEFT_ALT", AltRight: "RIGHT_ALT", ControlLeft: "LEFT_CONTROL", ControlRight: "RIGHT_CONTROL",
+        ShiftLeft: "LEFT_SHIFT", ShiftRight: "RIGHT_SHIFT", MetaLeft: "LEFT_GUI", MetaRight: "RIGHT_GUI",
+        Period: "PERIOD", Comma: "COMMA", Semicolon: "SEMICOLON", Quote: "QUOTE", Space: "SPACEBAR",
+        Minus: "MINUS", Equal: "EQUALS", BracketLeft: "LEFT_BRACKET", BracketRight: "RIGHT_BRACKET",
+        Backslash: "BACKSLASH", IntlBackslash: "POUND", Backquote: "GRAVE_ACCENT", Slash: "FORWARD_SLASH",
+        Enter: "ENTER", NumpadEnter: "KEYPAD_ENTER", Escape: "ESCAPE", Backspace: "BACKSPACE", Tab: "TAB",
+        CapsLock: "CAPS_LOCK", PrintScreen: "PRINT_SCREEN", ScrollLock: "SCROLL_LOCK", Pause: "PAUSE",
+        Insert: "INSERT", Home: "HOME", PageUp: "PAGE_UP", Delete: "DELETE", End: "END", PageDown: "PAGE_DOWN",
+        NumLock: "KEYPAD_NUMLOCK", NumpadDivide: "KEYPAD_FORWARD_SLASH", NumpadMultiply: "KEYPAD_ASTERISK",
+        NumpadSubtract: "KEYPAD_MINUS", NumpadAdd: "KEYPAD_PLUS", NumpadDecimal: "KEYPAD_PERIOD"
+      };
+      if (codes[code]) return codes[code];
+      const keypadDigit = code.match(/^Numpad([0-9])$/);
+      if (keypadDigit) return ["KEYPAD_ZERO", "KEYPAD_ONE", "KEYPAD_TWO", "KEYPAD_THREE", "KEYPAD_FOUR", "KEYPAD_FIVE", "KEYPAD_SIX", "KEYPAD_SEVEN", "KEYPAD_EIGHT", "KEYPAD_NINE"][Number(keypadDigit[1])];
+      return null;
+    }
+
+    function normalizeBindings(parsed) {
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw new Error("Expected a JSON object with GP1–GP22 keycode bindings.");
+      }
+      const next = {};
+      for (const button of buttons) {
+        const pin = `GP${button.pin}`;
+        const value = parsed[pin] ?? parsed[String(button.pin)];
+        if (value === undefined) {
+          next[pin] = defaults[pin];
+        } else if (typeof value === "string" && value.trim()) {
+          next[pin] = value.trim();
+        } else {
+          throw new Error(`${pin} must have a non-empty keycode string.`);
+        }
+      }
+      return next;
+    }
+
+    async function loadFromHandle(handle) {
+      try {
+        const fileHandle = await handle.getFileHandle("binds.json");
+        const file = await fileHandle.getFile();
+        const loaded = normalizeBindings(JSON.parse(await file.text()));
+        Object.assign(state, loaded);
+        document.getElementById("driveStatus").textContent = "CIRCUITPY connected · binds.json loaded";
+        showToast("Keymap loaded from CIRCUITPY ✨");
+      } catch (error) {
+        if (error.name === "NotFoundError") {
+          Object.assign(state, defaults);
+          document.getElementById("driveStatus").textContent = "CIRCUITPY connected · default map ready";
+          showToast("No binds.json yet — your default map is ready to save.");
+        } else {
+          throw error;
+        }
+      }
+      render();
+    }
+
+    document.getElementById("connectButton").addEventListener("click", async () => {
+      if (!("showDirectoryPicker" in window)) {
+        showToast("Folder access needs a supported browser. Use Import JSON / Export JSON instead.", true);
+        return;
+      }
+      try {
+        directoryHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+        document.getElementById("saveButton").disabled = false;
+        await loadFromHandle(directoryHandle);
+      } catch (error) {
+        if (error.name === "AbortError") return;
+        directoryHandle = null;
+        document.getElementById("saveButton").disabled = true;
+        showToast(`Could not read CIRCUITPY: ${error.message}`, true);
+      }
+    });
+
+    document.getElementById("saveButton").addEventListener("click", async () => {
+      if (!directoryHandle) return;
+      try {
+        const fileHandle = await directoryHandle.getFileHandle("binds.json", { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(`${JSON.stringify(state, null, 2)}\n`);
+        await writable.close();
+        showToast("Saved & Pico Reloading... ✨");
+      } catch (error) {
+        showToast(`Could not save binds.json: ${error.message}`, true);
+      }
+    });
+
+    document.getElementById("exportButton").addEventListener("click", () => {
+      const blob = new Blob([`${JSON.stringify(state, null, 2)}\n`], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "binds.json";
+      link.click();
+      URL.revokeObjectURL(url);
+      showToast("Your binds.json is ready to download ✨");
+    });
+
+    document.getElementById("importButton").addEventListener("click", () => document.getElementById("importInput").click());
+    document.getElementById("importInput").addEventListener("change", async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        Object.assign(state, normalizeBindings(JSON.parse(await file.text())));
+        render();
+        showToast("Keymap imported ✨");
+      } catch (error) {
+        showToast(`Could not import JSON: ${error.message}`, true);
+      } finally {
+        event.target.value = "";
+      }
+    });
+
+    document.getElementById("listenButton").addEventListener("click", () => {
+      listening = true;
+      captureBox.classList.add("listening");
+      captureMessage.textContent = "Listening… press any key";
+      document.getElementById("listenButton").textContent = "Listening…";
+    });
+    document.addEventListener("keydown", event => {
+      if (!dialog.open || !listening) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const key = codeToKeycode(event.code);
+      if (key && keycodeSet.has(key)) {
+        setDraft(key);
+        captureMessage.textContent = "Key captured!";
+        stopListening();
+      } else {
+        captureMessage.textContent = `${event.code || "That key"} isn’t supported — try another`;
+      }
+    }, true);
+    keySearch.addEventListener("input", filterKeycodes);
+    keySelect.addEventListener("change", () => {
+      if (keycodeSet.has(keySelect.value)) {
+        draftKey = keySelect.value;
+        captureValue.textContent = draftKey;
+      }
+    });
+    document.getElementById("applyButton").addEventListener("click", () => {
+      if (!activeButton || !keycodeSet.has(draftKey)) return;
+      state[`GP${activeButton.pin}`] = draftKey;
+      render();
+      dialog.close();
+    });
+    function closeEditor() {
+      stopListening();
+      dialog.close();
+    }
+    document.getElementById("closeDialog").addEventListener("click", closeEditor);
+    document.getElementById("cancelDialog").addEventListener("click", closeEditor);
+    dialog.addEventListener("click", event => {
+      if (event.target === dialog) closeEditor();
+    });
+    dialog.addEventListener("close", () => {
+      activeButton = null;
+      stopListening();
+      render();
+    });
+
+    render();
+    filterKeycodes();
+  </script>
+</body>
+</html>
