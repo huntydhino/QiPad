@@ -185,7 +185,7 @@
       justify-self: center;
       grid-template: repeat(4, 1fr) / repeat(3, 1fr);
     }
-    .cstick-group [data-id="A_BUTTON"] { grid-column: 1; grid-row: 4; }
+    .cstick-group [data-id="GP1"] { grid-column: 1; grid-row: 4; }
     .controller-key {
       z-index: 1;
       display: grid;
@@ -208,18 +208,18 @@
       transform: translateY(calc(var(--key-offset-y) - 2px));
     }
     .controller-key:active { transform: translateY(calc(var(--key-offset-y) + 1px)) scale(.97); }
-    .action-grid [data-id="R"],
-    .action-grid [data-id="MS"],
-    .action-grid [data-id="Z"],
-    .action-grid [data-id="LS"] { --key-offset-y: 8px; }
-    .movement-grid [data-id="LEFT"],
-    .movement-grid [data-id="MY"] { --key-offset-y: 8px; }
-    .movement-grid [data-id="UP_THUMB"] {
+    .action-grid [data-id="GP13"],
+    .action-grid [data-id="GP6"],
+    .action-grid [data-id="GP12"],
+    .action-grid [data-id="GP7"] { --key-offset-y: 8px; }
+    .movement-grid [data-id="GP22"],
+    .movement-grid [data-id="GP17"] { --key-offset-y: 8px; }
+    .movement-grid [data-id="GP18"] {
       position: relative;
       top: clamp(4px, .55vw, 7px);
       left: clamp(4px, .55vw, 7px);
     }
-    .movement-grid [data-id="MX"] {
+    .movement-grid [data-id="GP16"] {
       position: relative;
       top: calc(-1 * clamp(4px, .55vw, 7px));
       left: calc(-1 * clamp(4px, .55vw, 7px));
@@ -457,56 +457,56 @@
 
   <script type="application/json" id="layoutData">
     {
-      "layout_name": "Macropad keyboard Controller (22 Buttons Total)",
+      "layout_name": "Macropad GPIO Input Layout (22 Inputs)",
       "container": {
         "aspect_ratio": "16:9",
-        "style": "Relative positioning or absolute coordinate plane representing the controller faceplate"
+        "style": "GPIO inputs arranged on a 16:9 faceplate"
       },
       "sections": [
         {
-          "name": "left_movement_cluster",
-          "description": "Arc layout for left-hand movement and modifiers",
+          "name": "gpio_16_22_group",
+          "description": "Switch cluster assigned to GP16 through GP22",
           "buttons": [
-            { "id": "MY", "label": "MY", "color": "blue", "position": "far_left" },
-            { "id": "LEFT", "label": "←", "color": "grey", "position": "arc_top_left" },
-            { "id": "DOWN", "label": "↓", "color": "grey", "position": "arc_top_center" },
-            { "id": "RIGHT", "label": "→", "color": "grey", "position": "arc_top_right" },
-            { "id": "UP_THUMB", "label": "↑", "color": "grey", "position": "lower_left_thumb" },
-            { "id": "MX", "label": "MX", "color": "blue", "position": "lower_left_thumb_adj" }
+            { "id": "GP17", "position": "far_left" },
+            { "id": "GP22", "position": "arc_top_left" },
+            { "id": "GP21", "position": "arc_top_center" },
+            { "id": "GP20", "position": "arc_top_right" },
+            { "id": "GP18", "position": "lower_left_thumb" },
+            { "id": "GP16", "position": "lower_left_thumb_adj" }
           ]
         },
         {
-          "name": "center_utility_cluster",
-          "description": "Central column including Start and two requested adjacent utility buttons",
+          "name": "gpio_14_15_19_group",
+          "description": "Center switches assigned to GP14, GP15, and GP19",
           "buttons": [
-            { "id": "EXTRA_LEFT", "label": "Select / Extra 1", "color": "white", "position": "left_of_start" },
-            { "id": "START", "label": "Start", "color": "white", "position": "center" },
-            { "id": "EXTRA_RIGHT", "label": "Home / Extra 2", "color": "white", "position": "right_of_start" }
+            { "id": "GP19", "position": "left_of_start" },
+            { "id": "GP15", "position": "center" },
+            { "id": "GP14", "position": "right_of_start" }
           ]
         },
         {
-          "name": "right_c_stick_cluster",
-          "description": "Yellow circular C-Stick cluster positioned at the lower right",
+          "name": "gpio_1_5_group",
+          "description": "Right-side directional switches assigned to GP1 through GP5",
           "buttons": [
-            { "id": "C_UP", "label": "↑", "color": "yellow", "position": "top" },
-            { "id": "C_LEFT", "label": "←", "color": "yellow", "position": "left" },
-            { "id": "C_RIGHT", "label": "→", "color": "yellow", "position": "right" },
-            { "id": "C_DOWN", "label": "↓", "color": "yellow", "position": "bottom" },
-            { "id": "A_BUTTON", "label": "A", "color": "lime_green", "position": "center" }
+            { "id": "GP4", "position": "top" },
+            { "id": "GP3", "position": "left" },
+            { "id": "GP5", "position": "right" },
+            { "id": "GP2", "position": "bottom" },
+            { "id": "GP1", "position": "center" }
           ]
         },
         {
-          "name": "right_action_cluster",
-          "description": "Main action buttons and shoulder modifiers grouped at the upper right",
+          "name": "gpio_6_13_group",
+          "description": "Action switches assigned to GP6 through GP13",
           "buttons": [
-            { "id": "R", "label": "R", "color": "dark_grey", "position": "top_left" },
-            { "id": "Y", "label": "Y", "color": "grey", "position": "top_center" },
-            { "id": "L", "label": "L", "color": "grey", "position": "top_right" },
-            { "id": "Z", "label": "Z", "color": "light_purple", "position": "middle_left" },
-            { "id": "X", "label": "X", "color": "grey", "position": "middle_center" },
-            { "id": "B", "label": "B", "color": "coral_red", "position": "middle_right" },
-            { "id": "MS", "label": "MS", "color": "grey", "position": "far_right_top" },
-            { "id": "LS", "label": "LS", "color": "grey", "position": "far_right_bottom" }
+            { "id": "GP13", "position": "top_left" },
+            { "id": "GP11", "position": "top_center" },
+            { "id": "GP9", "position": "top_right" },
+            { "id": "GP12", "position": "middle_left" },
+            { "id": "GP10", "position": "middle_center" },
+            { "id": "GP8", "position": "middle_right" },
+            { "id": "GP6", "position": "far_right_top" },
+            { "id": "GP7", "position": "far_right_bottom" }
           ]
         }
       ]
@@ -515,13 +515,6 @@
   <script>
     "use strict";
     const layout = JSON.parse(document.getElementById("layoutData").textContent);
-    const pinById = Object.freeze({
-      A_BUTTON: 1, C_DOWN: 2, C_LEFT: 3, C_UP: 4, C_RIGHT: 5,
-      MS: 6, LS: 7, B: 8, L: 9, X: 10, Y: 11, Z: 12, R: 13,
-      EXTRA_RIGHT: 14, START: 15, MX: 16, MY: 17, UP_THUMB: 18,
-      EXTRA_LEFT: 19, RIGHT: 20, DOWN: 21, LEFT: 22
-    });
-
     const keycodes = [
       ...("ABCDEFGHIJKLMNOPQRSTUVWXYZ").split(""),
       "ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE",
@@ -548,7 +541,7 @@
     const buttons = layout.sections.flatMap(section => section.buttons.map(button => ({
       ...button,
       section: section.name,
-      pin: pinById[button.id]
+      pin: Number(button.id.slice(2))
     })));
     const state = { ...defaults };
     let activeButton = null;
@@ -567,10 +560,10 @@
 
     function render() {
       const groups = {
-        left_movement_cluster: "leftMovement",
-        center_utility_cluster: "centerUtility",
-        right_c_stick_cluster: "cstickCluster",
-        right_action_cluster: "rightActions"
+        gpio_16_22_group: "leftMovement",
+        gpio_14_15_19_group: "centerUtility",
+        gpio_1_5_group: "cstickCluster",
+        gpio_6_13_group: "rightActions"
       };
       for (const groupId of Object.values(groups)) {
         document.getElementById(groupId).replaceChildren();
@@ -580,7 +573,7 @@
         const binding = formatBinding(state[pin]);
         const element = document.createElement("button");
         element.type = "button";
-        element.className = `controller-key pos-${button.position} tone-${button.color}`;
+        element.className = `controller-key pos-${button.position}`;
         element.dataset.id = button.id;
         element.dataset.pin = pin;
         element.title = `${pin} · ${binding}`;
@@ -641,7 +634,7 @@
       const binding = state[`GP${button.pin}`];
       draftKeys = Array.isArray(binding) ? [...binding] : [binding];
       document.getElementById("dialogTitle").textContent = `GP${button.pin}`;
-      document.getElementById("dialogPin").textContent = `${button.id} · GP${button.pin} · CURRENTLY ${formatBinding(binding)}`;
+      document.getElementById("dialogPin").textContent = `${button.id} · CURRENTLY ${formatBinding(binding)}`;
       captureValue.textContent = formatBinding(binding);
       captureMessage.textContent = "Ready when you are";
       captureBox.classList.remove("listening");
