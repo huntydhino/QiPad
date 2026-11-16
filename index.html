@@ -187,6 +187,7 @@
     }
     .cstick-group [data-id="GP1"] { grid-column: 1; grid-row: 4; }
     .controller-key {
+      position: relative;
       z-index: 1;
       display: grid;
       min-width: 0;
@@ -207,6 +208,37 @@
       filter: brightness(1.17);
       transform: translateY(calc(var(--key-offset-y) - 2px));
     }
+    .key-tooltip {
+      position: absolute;
+      z-index: 4;
+      bottom: calc(100% + 7px);
+      left: 50%;
+      width: max-content;
+      max-width: min(220px, 70vw);
+      padding: 6px 9px;
+      border: 1px solid #5b5063;
+      border-radius: 7px;
+      color: var(--text);
+      background: #17151e;
+      box-shadow: 0 7px 20px #0009;
+      font: 700 11px/1.35 ui-monospace, SFMono-Regular, Consolas, monospace;
+      text-align: center;
+      overflow-wrap: anywhere;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translate(var(--tooltip-x, -50%), 4px);
+      transition: opacity .15s, transform .15s, visibility .15s;
+    }
+    .controller-key:hover .key-tooltip,
+    .controller-key:focus-visible .key-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(var(--tooltip-x, -50%), 0);
+    }
+    .movement-grid [data-id="GP22"] .key-tooltip { left: 0; --tooltip-x: 0%; }
+    .action-grid [data-id="GP6"] .key-tooltip,
+    .action-grid [data-id="GP7"] .key-tooltip { right: 0; left: auto; --tooltip-x: 0%; }
     .controller-key:active { transform: translateY(calc(var(--key-offset-y) + 1px)) scale(.97); }
     .action-grid [data-id="GP13"],
     .action-grid [data-id="GP6"],
@@ -419,9 +451,6 @@
           </section>
         </div>
       </div>
-      <div class="legend">
-        <span><i class="dot"></i> GP pin + current key binding</span>
-      </div>
     </section>
     <p class="footer-note">Your edits stay in this page until you export them or save them to your Pico. When the drive is connected, saving writes <code>binds.json</code> to its root; CircuitPython can then reload the new bindings.</p>
   </main>
@@ -576,7 +605,6 @@
         element.className = `controller-key pos-${button.position}`;
         element.dataset.id = button.id;
         element.dataset.pin = pin;
-        element.title = `${pin} · ${binding}`;
         element.setAttribute("aria-label", `${pin}, bound to ${binding}. Click to edit.`);
         element.setAttribute("aria-pressed", String(activeButton?.id === button.id));
         if (activeButton?.id === button.id) element.classList.add("selected");
@@ -588,7 +616,12 @@
         label.textContent = pin;
         face.append(label);
 
-        element.append(face);
+        const tooltip = document.createElement("span");
+        tooltip.className = "key-tooltip";
+        tooltip.textContent = `${pin} → ${binding}`;
+        tooltip.setAttribute("aria-hidden", "true");
+
+        element.append(face, tooltip);
         element.addEventListener("click", () => openEditor(button));
         document.getElementById(groups[button.section]).append(element);
       }
