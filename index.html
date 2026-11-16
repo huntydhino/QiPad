@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#14131d">
-  <title>Boxx Keymap Studio</title>
+  <title>Macropad Keymap Tool</title>
   <style>
     :root {
       color-scheme: dark;
@@ -313,7 +313,7 @@
     .capture-box.listening { border-style: solid; border-color: var(--mint); background: #243631; }
     .capture-copy strong { display: block; font-size: 13px; }
     .capture-copy span { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
-    .capture-value { color: var(--mint); font: 700 12px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .capture-value { max-width: 55%; color: var(--mint); font: 700 12px ui-monospace, SFMono-Regular, Consolas, monospace; text-align: right; overflow-wrap: anywhere; }
     .dialog-input {
       width: 100%;
       min-height: 42px;
@@ -386,12 +386,12 @@
 
     <div class="info-strip">
       <span class="info-icon" aria-hidden="true">✦</span>
-      <span><strong>Tap any button</strong> to remap it. Click “Listen” and press a key, or pick a keycode from the searchable list.</span>
+      <span><strong>Tap any button</strong> to remap it. Click “Listen” and hold keys together for a combination, or choose a single keycode.</span>
     </div>
 
     <section class="board-wrap" aria-labelledby="layoutTitle">
       <div class="board-top">
-        <h2 id="layoutTitle">customize your layout <span aria-hidden="true">♡</span></h2>
+        <h2 id="layoutTitle">customize your layout <span aria-hidden="true">♡ </span></h2>
         <p>22 controls · Select a button to edit its key binding</p>
       </div>
       <div class="controller-viewport">
@@ -430,16 +430,16 @@
         </div>
         <button class="close-button" id="closeDialog" aria-label="Close dialog">&times;</button>
       </div>
-      <label class="field-label" for="listenButton">Listen for keypress</label>
+      <label class="field-label" for="listenButton">Record key or combination</label>
       <div class="capture-box" id="captureBox">
         <div class="capture-copy">
           <strong id="captureMessage">Ready when you are</strong>
-          <span>Press a key on your keyboard</span>
+          <span>Hold keys together, then release to finish</span>
         </div>
         <span class="capture-value" id="captureValue">—</span>
       </div>
-      <button class="btn btn-primary" id="listenButton" style="width:100%;margin-top:10px">⌨ &nbsp; Listen for Keypress</button>
-      <label class="field-label" for="keySearch">Or choose a keycode</label>
+      <button class="btn btn-primary" id="listenButton" style="width:100%;margin-top:10px">⌨ &nbsp; Listen for Key or Combination</button>
+      <label class="field-label" for="keySearch">Or choose a single keycode</label>
       <input class="dialog-input" id="keySearch" type="search" placeholder="Search keycodes…" autocomplete="off">
       <select class="dialog-input" id="keySelect" size="6" aria-label="Available CircuitPython keycodes"></select>
       <div class="dialog-actions">
@@ -452,7 +452,7 @@
 
   <script type="application/json" id="layoutData">
     {
-      "layout_name": "Boxx-Style Arcade Controller (22 Buttons Total)",
+      "layout_name": "Macropad keyboard Controller (22 Buttons Total)",
       "container": {
         "aspect_ratio": "16:9",
         "style": "Relative positioning or absolute coordinate plane representing the controller faceplate"
@@ -547,7 +547,8 @@
     })));
     const state = { ...defaults };
     let activeButton = null;
-    let draftKey = "";
+    let draftKeys = [];
+    const heldKeyCodes = new Set();
     let listening = false;
     let directoryHandle = null;
     let toastTimer;
@@ -571,13 +572,14 @@
       }
       for (const button of buttons) {
         const pin = `GP${button.pin}`;
+        const binding = formatBinding(state[pin]);
         const element = document.createElement("button");
         element.type = "button";
         element.className = `controller-key pos-${button.position} tone-${button.color}`;
         element.dataset.id = button.id;
         element.dataset.pin = pin;
-        element.title = `${pin} · ${state[pin]}`;
-        element.setAttribute("aria-label", `${button.label}, ${pin}, bound to ${state[pin]}. Click to edit.`);
+        element.title = `${pin} · ${binding}`;
+        element.setAttribute("aria-label", `${button.label}, ${pin}, bound to ${binding}. Click to edit.`);
         element.setAttribute("aria-pressed", String(activeButton?.id === button.id));
         if (activeButton?.id === button.id) element.classList.add("selected");
 
@@ -603,43 +605,55 @@
       toastTimer = setTimeout(() => toast.classList.remove("show"), 3600);
     }
 
+    function formatBinding(binding) {
+      return Array.isArray(binding) ? binding.join(" + ") : binding;
+    }
+
     function filterKeycodes() {
       const query = keySearch.value.trim().toUpperCase();
       const matches = keycodes.filter(name => name.includes(query));
       keySelect.replaceChildren(...matches.map(name => new Option(name, name)));
-      const selected = matches.includes(draftKey) ? draftKey : matches[0];
+      const selectedDraftKey = draftKeys[draftKeys.length - 1];
+      const selected = matches.includes(selectedDraftKey) ? selectedDraftKey : matches[0];
       if (selected) keySelect.value = selected;
     }
 
-    function setDraft(key) {
-      if (!keycodeSet.has(key)) return;
-      draftKey = key;
-      captureValue.textContent = key;
+    function updateDraft(keys) {
+      draftKeys = [...new Set(keys.filter(key => keycodeSet.has(key)))];
+      captureValue.textContent = draftKeys.length ? formatBinding(draftKeys) : "—";
+    }
+
+    function setDraft(keys) {
+      updateDraft(keys);
       keySearch.value = "";
       filterKeycodes();
-      keySelect.value = key;
+      if (draftKeys.length === 1) keySelect.value = draftKeys[0];
+      else keySelect.selectedIndex = -1;
     }
 
     function openEditor(button) {
       activeButton = button;
-      draftKey = state[`GP${button.pin}`];
+      const binding = state[`GP${button.pin}`];
+      draftKeys = Array.isArray(binding) ? [...binding] : [binding];
       document.getElementById("dialogTitle").textContent = button.label;
-      document.getElementById("dialogPin").textContent = `${button.id} · GP${button.pin} · CURRENTLY ${draftKey}`;
-      captureValue.textContent = draftKey;
+      document.getElementById("dialogPin").textContent = `${button.id} · GP${button.pin} · CURRENTLY ${formatBinding(binding)}`;
+      captureValue.textContent = formatBinding(binding);
       captureMessage.textContent = "Ready when you are";
       captureBox.classList.remove("listening");
       listening = false;
+      heldKeyCodes.clear();
       keySearch.value = "";
       filterKeycodes();
-      keySelect.value = draftKey;
+      keySelect.value = draftKeys.length === 1 ? draftKeys[0] : "";
       render();
       dialog.showModal();
     }
 
     function stopListening() {
       listening = false;
+      heldKeyCodes.clear();
       captureBox.classList.remove("listening");
-      document.getElementById("listenButton").textContent = "⌨  Listen for Keypress";
+      document.getElementById("listenButton").textContent = "⌨  Listen for Key or Combination";
     }
 
     function codeToKeycode(code) {
@@ -677,8 +691,11 @@
           next[pin] = defaults[pin];
         } else if (typeof value === "string" && value.trim()) {
           next[pin] = value.trim();
+        } else if (Array.isArray(value) && value.length && value.every(key => typeof key === "string" && key.trim())) {
+          const keys = [...new Set(value.map(key => key.trim()))];
+          next[pin] = keys.length === 1 ? keys[0] : keys;
         } else {
-          throw new Error(`${pin} must have a non-empty keycode string.`);
+          throw new Error(`${pin} must have a non-empty keycode string or array.`);
         }
       }
       return next;
@@ -761,9 +778,11 @@
     });
 
     document.getElementById("listenButton").addEventListener("click", () => {
+      setDraft([]);
+      heldKeyCodes.clear();
       listening = true;
       captureBox.classList.add("listening");
-      captureMessage.textContent = "Listening… press any key";
+      captureMessage.textContent = "Listening… hold keys together, then release";
       document.getElementById("listenButton").textContent = "Listening…";
     });
     document.addEventListener("keydown", event => {
@@ -772,23 +791,33 @@
       event.stopPropagation();
       const key = codeToKeycode(event.code);
       if (key && keycodeSet.has(key)) {
-        setDraft(key);
-        captureMessage.textContent = "Key captured!";
-        stopListening();
+        if (event.repeat) return;
+        heldKeyCodes.add(event.code);
+        updateDraft([...draftKeys, key]);
+        captureMessage.textContent = draftKeys.length > 1 ? "Combination detected · release keys to finish" : "Key detected · hold to add more";
       } else {
         captureMessage.textContent = `${event.code || "That key"} isn’t supported — try another`;
+      }
+    }, true);
+    document.addEventListener("keyup", event => {
+      if (!dialog.open || !listening || !heldKeyCodes.has(event.code)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      heldKeyCodes.delete(event.code);
+      if (!heldKeyCodes.size && draftKeys.length) {
+        captureMessage.textContent = draftKeys.length > 1 ? "Combination captured!" : "Key captured!";
+        stopListening();
       }
     }, true);
     keySearch.addEventListener("input", filterKeycodes);
     keySelect.addEventListener("change", () => {
       if (keycodeSet.has(keySelect.value)) {
-        draftKey = keySelect.value;
-        captureValue.textContent = draftKey;
+        updateDraft([keySelect.value]);
       }
     });
     document.getElementById("applyButton").addEventListener("click", () => {
-      if (!activeButton || !keycodeSet.has(draftKey)) return;
-      state[`GP${activeButton.pin}`] = draftKey;
+      if (!activeButton || !draftKeys.length || !draftKeys.every(key => keycodeSet.has(key))) return;
+      state[`GP${activeButton.pin}`] = draftKeys.length === 1 ? draftKeys[0] : [...draftKeys];
       render();
       dialog.close();
     });
