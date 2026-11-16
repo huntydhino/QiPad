@@ -185,7 +185,6 @@
       justify-self: center;
       grid-template: repeat(4, 1fr) / repeat(3, 1fr);
     }
-    .cstick-group .key-face { width: clamp(34px, 3.8vw, 48px); }
     .cstick-group [data-id="A_BUTTON"] { grid-column: 1; grid-row: 4; }
     .controller-key {
       z-index: 1;
@@ -250,9 +249,7 @@
       text-shadow: 0 1px #ffffff33;
       transition: box-shadow .16s;
     }
-    .key-label { max-width: 100%; overflow-wrap: anywhere; }
-    .controller-key[data-id="EXTRA_LEFT"] .key-label,
-    .controller-key[data-id="EXTRA_RIGHT"] .key-label { font-size: 8px; }
+    .key-label { max-width: 100%; font-size: 12px; overflow-wrap: anywhere; }
     .key-face { background: linear-gradient(145deg, #ffc1df, #f078ad); }
     .pos-far_left { grid-column: 4; grid-row: 1; }
     .pos-arc_top_left { grid-column: 1; grid-row: 1; }
@@ -579,7 +576,7 @@
         element.dataset.id = button.id;
         element.dataset.pin = pin;
         element.title = `${pin} · ${binding}`;
-        element.setAttribute("aria-label", `${button.label}, ${pin}, bound to ${binding}. Click to edit.`);
+        element.setAttribute("aria-label", `${pin}, bound to ${binding}. Click to edit.`);
         element.setAttribute("aria-pressed", String(activeButton?.id === button.id));
         if (activeButton?.id === button.id) element.classList.add("selected");
 
@@ -587,7 +584,7 @@
         face.className = "key-face";
         const label = document.createElement("span");
         label.className = "key-label";
-        label.textContent = button.label;
+        label.textContent = pin;
         face.append(label);
 
         element.append(face);
@@ -635,7 +632,7 @@
       activeButton = button;
       const binding = state[`GP${button.pin}`];
       draftKeys = Array.isArray(binding) ? [...binding] : [binding];
-      document.getElementById("dialogTitle").textContent = button.label;
+      document.getElementById("dialogTitle").textContent = `GP${button.pin}`;
       document.getElementById("dialogPin").textContent = `${button.id} · GP${button.pin} · CURRENTLY ${formatBinding(binding)}`;
       captureValue.textContent = formatBinding(binding);
       captureMessage.textContent = "Ready when you are";
