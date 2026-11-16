@@ -123,7 +123,9 @@
     .controller-faceplate {
       position: relative;
       isolation: isolate;
-      width: 100%;
+      width: 92%;
+      max-width: 1100px;
+      margin-inline: auto;
       min-width: 760px;
       aspect-ratio: 16 / 9;
       overflow: hidden;
@@ -250,14 +252,7 @@
     .key-label { max-width: 100%; overflow-wrap: anywhere; }
     .controller-key[data-id="EXTRA_LEFT"] .key-label,
     .controller-key[data-id="EXTRA_RIGHT"] .key-label { font-size: 8px; }
-    .tone-blue .key-face { background: linear-gradient(145deg, #78b9fa, #4385d8); }
-    .tone-grey .key-face { background: linear-gradient(145deg, #afb2bb, #777b89); }
-    .tone-yellow .key-face { background: linear-gradient(145deg, #ffe47c, #e5b638); }
-    .tone-lime_green .key-face { background: linear-gradient(145deg, #ffe47c, #e5b638); }
-    .tone-dark_grey .key-face { color: #f5f1ff; background: linear-gradient(145deg, #626572, #393b48); }
-    .tone-light_purple .key-face { background: linear-gradient(145deg, #d6b5ff, #a27bd2); }
-    .tone-coral_red .key-face { background: linear-gradient(145deg, #ff9a94, #df5961); }
-    .tone-white .key-face { background: linear-gradient(145deg, #fff, #d1cbd9); }
+    .key-face { background: linear-gradient(145deg, #ffc1df, #f078ad); }
     .pos-far_left { grid-column: 4; grid-row: 1; }
     .pos-arc_top_left { grid-column: 1; grid-row: 1; }
     .pos-arc_top_center { grid-column: 2; grid-row: 1; }
@@ -419,9 +414,6 @@
         </div>
       </div>
       <div class="legend">
-        <span><i class="dot blue"></i> MY / MX modifiers</span>
-        <span><i class="dot yellow"></i> C-Stick / A</span>
-        <span><i class="dot red"></i> B action</span>
         <span><i class="dot"></i> GP pin + current key binding</span>
       </div>
     </section>
